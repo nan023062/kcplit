@@ -1,0 +1,21 @@
+{
+  "displayName": "Nave.FPSLit",
+  "name": "com.nave.fps-framework",
+  "version": "1.0.0",
+  "unity": "2019.2",
+  "description": "This is an example package",
+  "keywords": ["FPS",  "test"],
+  "category": "Libraries",
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/ariboy/FSPNetwork.git",
+    "revision": "0001"
+  },
+  "dependencies": {
+  },
+  "author": {
+  "name": "Nave",
+  "email": "315774101@qq.com",
+  "url": "https://gitee.com/ariboy/FSPNetwork.git"
+  }
+}
