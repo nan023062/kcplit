@@ -1,0 +1,21 @@
+[I]开启监听...... <2021/1/30 17:18:34>
+[I]连接服务端成功！
+本地IP:127.0.0.1，本地端口50296 <2021/1/30 17:18:38>
+[E]反序列化失败: System.NullReferenceException: Object reference not set to an instance of an object
+  at ProtoBuf.ProtoReader.Ensure (System.Int32 count, System.Boolean strict) [0x00110] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\ProtoReader.cs:300 
+  at ProtoBuf.ProtoReader.TryReadUInt32VariantWithoutMoving (System.Boolean trimNegative, System.UInt32& value) [0x0000f] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\ProtoReader.cs:174 
+  at ProtoBuf.ProtoReader.TryReadUInt32Variant (System.UInt32& value) [0x00001] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\ProtoReader.cs:234 
+  at ProtoBuf.ProtoReader.ReadFieldHeader () [0x00027] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\ProtoReader.cs:751 
+  at ProtoBuf.Serializers.TypeSerializer.Read (System.Object value, ProtoBuf.ProtoReader source) [0x00182] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Serializers\TypeSerializer.cs:194 
+  at ProtoBuf.Meta.RuntimeTypeModel.Deserialize (System.Int32 key, System.Object value, ProtoBuf.ProtoReader source) [0x00051] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Meta\RuntimeTypeModel.cs:780 
+  at ProtoBuf.Meta.TypeModel.DeserializeCore (ProtoBuf.ProtoReader reader, System.Type type, System.Object value, System.Boolean noAutoCreate) [0x0001f] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Meta\TypeModel.cs:709 
+  at ProtoBuf.Meta.TypeModel.Deserialize (System.IO.Stream source, System.Object value, System.Type type, ProtoBuf.SerializationContext context) [0x00029] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Meta\TypeModel.cs:584 
+  at ProtoBuf.Meta.TypeModel.Deserialize (System.IO.Stream source, System.Object value, System.Type type) [0x00001] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Meta\TypeModel.cs:558 
+  at ProtoBuf.Serializer.Deserialize[T] (System.IO.Stream source) [0x00001] in G:\git repository\FSPNetwork\Unity Project\Assets\NaveNetwork\Runtime\Network_Self\protobuf-net\Serializer.cs:86 
+  at NetworkTools.DeSerialize[T] (NetPackage package) [0x00026] in G:\git repository\FSPNetwork\Unity Project\Assets\test\Script\Core\NetPackage\NetworkTools.cs:44  <2021/1/30 17:18:41>
+[I]Client Count:0 <2021/1/30 17:18:41>
+[I]客户端127.0.0.1:50296已经中断连接
+Object reference not set to an instance of an object
+  at ServerSocket.OnHandleNetPackage (NetPackage package) [0x00017] in G:\git repository\FSPNetwork\Unity Project\Assets\test\Script\Server\ServerSocket.cs:141 
+  at ServerSocket.recvThread (System.Object socketclientpara) [0x00058] in G:\git repository\FSPNetwork\Unity Project\Assets\test\Script\Server\ServerSocket.cs:114 
+ <2021/1/30 17:18:41>

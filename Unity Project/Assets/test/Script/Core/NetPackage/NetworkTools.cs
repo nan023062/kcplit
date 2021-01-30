@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using ProtoBuf;
+using Nave.Network;
 
 public static class NetworkTools
 {
@@ -41,31 +41,13 @@ public static class NetworkTools
             {
                 ms.Write(package.Buffer(), 0, package.Size());
                 ms.Position = 0;
-                return ProtoBuf.Serializer.Deserialize(typeof(T), ms) as T;
+                return ProtoBuf.Serializer.Deserialize<T>(ms);
             }
         }
         catch (Exception ex)
         {
             GameLog.LogError("反序列化失败: " + ex.ToString());
             return default(T);
-        }
-    }
-
-    public static object DeSerialize(NetPackage package)
-    {
-        try
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                ms.Write(package.Buffer(), 0, package.Size());
-                ms.Position = 0;
-                return ProtoBuf.Serializer.Deserialize(GetTypeByOpcode(package.opcode), ms);
-            }
-        }
-        catch (Exception ex)
-        {
-            GameLog.LogError("反序列化失败: " + ex.ToString());
-            return null;
         }
     }
 
