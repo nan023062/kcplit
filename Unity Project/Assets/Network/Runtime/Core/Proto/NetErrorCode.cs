@@ -1,4 +1,4 @@
-﻿namespace Nave.Network
+﻿namespace Nave.Network.Proto
 {
     public enum NetErrorCode
     {

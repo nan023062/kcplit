@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Nave.Network
+namespace Nave.Network.Proto
 {
     /// <summary>
     /// 循环BUFFER

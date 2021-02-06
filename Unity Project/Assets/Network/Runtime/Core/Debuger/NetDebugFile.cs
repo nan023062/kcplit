@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Nave.Network.Utils;
-using Engine.Network.protocol;
+using Nave.Network.Proto;
 
 namespace Nave.Network
 {

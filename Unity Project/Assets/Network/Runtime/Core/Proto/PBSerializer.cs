@@ -2,7 +2,7 @@
 using ProtoBuf.Meta;
 using System.IO;
 
-namespace Nave.Network.Utils
+namespace Nave.Network.Proto
 {
     /// <summary>
     /// 序列化帮助类

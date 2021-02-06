@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.Network.protocol;
 
-namespace Engine.Network
+namespace Nave.Network
 {
     public static class NetDebuger
     {

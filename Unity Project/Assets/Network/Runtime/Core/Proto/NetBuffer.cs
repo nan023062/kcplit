@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Nave.Network
+namespace Nave.Network.Proto
 {
 
     public class NetBuffer
@@ -137,7 +137,7 @@ namespace Nave.Network
 
         public string ToHexString()
         {
-            return Nave.Network.Utils.Encoding.BytesToHex(m_buff, m_len);
+            return Encoding.BytesToHex(m_buff, m_len);
         }
 
         public override string ToString()
@@ -353,7 +353,7 @@ namespace Nave.Network
 
         public int WriteUTF8(string value, int writePos = -1)
         {
-            byte[] tmp = Encoding.UTF8.GetBytes(value);
+            byte[] tmp = System.Text.Encoding.UTF8.GetBytes(value);
             int nextPos = WriteInt(tmp.Length, writePos);
             return WriteBytes(tmp, nextPos);
         }
@@ -445,7 +445,7 @@ namespace Nave.Network
         public string ReadUTF()
         {
             int count = this.ReadInt();
-            string str = Encoding.UTF8.GetString(this.m_buff, this.m_pos, count);
+            string str = System.Text.Encoding.UTF8.GetString(this.m_buff, this.m_pos, count);
             this.m_pos += count;
             return str;
         }

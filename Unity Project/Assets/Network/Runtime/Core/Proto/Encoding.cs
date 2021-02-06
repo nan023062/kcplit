@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nave.Network.Utils
+namespace Nave.Network.Proto
 {
     public class Encoding
     {

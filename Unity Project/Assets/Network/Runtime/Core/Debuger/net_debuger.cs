@@ -8,7 +8,7 @@
 //------------------------------------------------------------------------------
 
 // Generated from: fsp_debuger.proto
-namespace Engine.Network.protocol
+namespace Nave.Network
 {
     [global::System.Serializable, global::ProtoBuf.ProtoContract(Name = @"NetSampleItem")]
     public partial class NetSampleItem : global::ProtoBuf.IExtensible
@@ -65,9 +65,9 @@ namespace Engine.Network.protocol
     {
         public NetDebugFileData() { }
 
-        private readonly global::System.Collections.Generic.List<Engine.Network.protocol.NetSampleItem> _profiler_samples = new global::System.Collections.Generic.List<Engine.Network.protocol.NetSampleItem>();
+        private readonly global::System.Collections.Generic.List<Nave.Network.NetSampleItem> _profiler_samples = new global::System.Collections.Generic.List<Nave.Network.NetSampleItem>();
         [global::ProtoBuf.ProtoMember(1, Name = @"profiler_samples", DataFormat = global::ProtoBuf.DataFormat.Default)]
-        public global::System.Collections.Generic.List<Engine.Network.protocol.NetSampleItem> profiler_samples
+        public global::System.Collections.Generic.List<Nave.Network.NetSampleItem> profiler_samples
         {
             get { return _profiler_samples; }
         }
