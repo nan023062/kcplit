@@ -26,7 +26,8 @@ namespace Nave.Network.KPCLit
 
         public void Init(int port, ISessionListener listener)
         {
-            //Debuger.Log("port:{0}", port);
+            Debuger.Log("port:{0}", port);
+
             m_port = port;
             m_listener = listener;
             m_mapSession = new MapList<uint, ISession>();
@@ -36,7 +37,7 @@ namespace Nave.Network.KPCLit
 
         public void Clean()
         {
-            //Debuger.Log();
+            Debuger.Log();
             m_mapSession.Clear();
             Close();
         }
@@ -51,15 +52,13 @@ namespace Nave.Network.KPCLit
                 ISession session = pair.Value;
                 sb.AppendLine("\t" + session.ToString());
             }
-
-            //Debuger.LogWarning("\nGateway Sessions ({0}):\n{1}", m_mapSession.Count, sb);
-
+            Debuger.LogWarning("\nGateway Sessions ({0}):\n{1}", m_mapSession.Count, sb);
         }
 
         private void Start()
         {
-            //Debuger.Log();
-
+            Debuger.Log();
+            
             m_IsRunning = true;
 
             m_SystemSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -71,7 +70,8 @@ namespace Nave.Network.KPCLit
 
         private void Close()
         {
-            //Debuger.Log();
+            Debuger.Log();
+
             m_IsRunning = false;
 
             if (m_ThreadRecv != null)
@@ -142,7 +142,6 @@ namespace Nave.Network.KPCLit
                 m_RecvBufferTempReader.ReadBytes(m_32b, 0, 4);
                 uint sid = BitConverter.ToUInt32(m_32b, 0);
                 //uint sid = m_RecvBufferTempReader.ReadUInt();
-                
 
                 lock (m_mapSession)
                 {
@@ -168,7 +167,7 @@ namespace Nave.Network.KPCLit
                     }
                     else
                     {
-                        //Debuger.LogWarning("无效的包! sid:{0}", sid);
+                        Debuger.LogWarning("无效的包! sid:{0}", sid);
                     }
                 }
             }
@@ -184,7 +183,7 @@ namespace Nave.Network.KPCLit
             }
             else
             {
-               // Debuger.LogError("Socket已经关闭！");
+               Debuger.LogError("Socket已经关闭！");
             }
         }
 

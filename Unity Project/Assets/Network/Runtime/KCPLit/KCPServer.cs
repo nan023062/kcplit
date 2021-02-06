@@ -120,8 +120,7 @@ namespace Nave.Network.KPCLit
             m_rpc.UnRegisterListener(listener);
         }
 
-
-        public void HandleRPCMessage(ISession session, RPCMessage rpcmsg)
+        private void HandleRPCMessage(ISession session, RPCMessage rpcmsg)
         {
 
             RPCMethodHelper helper = m_rpc.GetMethodHelper(rpcmsg.name);
