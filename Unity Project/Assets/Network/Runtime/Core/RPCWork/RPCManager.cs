@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Nave.Network.Proto;
 
 namespace Nave.Network.RPCWork
 {
@@ -11,14 +12,17 @@ namespace Nave.Network.RPCWork
         public MethodInfo method;
     }
 
-    public class RPCBase
+    public abstract class RPCManager
     {
         protected List<object> m_listListener;
 
         protected DictionarySafe<string, RPCMethodHelper> m_mapMethodHelper;
 
+        public Event<RPCMessage> SendRPCCall;
+
         public void Init()
         {
+            SendRPCCall = new Event<RPCMessage>();
             m_listListener = new List<object>();
             m_mapMethodHelper = new DictionarySafe<string, RPCMethodHelper>();
         }
@@ -49,7 +53,6 @@ namespace Nave.Network.RPCWork
             Debuger.LogWarning("\nRPC Cached Methods ({0}):\n{1}", m_mapMethodHelper.Count, sb);
         }
 
-
         public void RegisterListener(object listener)
         {
             if (!m_listListener.Contains(listener))
@@ -67,7 +70,6 @@ namespace Nave.Network.RPCWork
                 m_listListener.Remove(listener);
             }
         }
-
 
         public RPCMethodHelper GetMethodHelper(string name)
         {
@@ -97,6 +99,5 @@ namespace Nave.Network.RPCWork
 
             return helper;
         }
-
     }
 }

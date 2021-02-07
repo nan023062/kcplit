@@ -2,18 +2,14 @@
 using System.Reflection;
 using Nave.Network.KCPWork;
 using Nave.Network.Proto;
-using Nave.Network.RPCWork;
-
 
 namespace Nave.Network.KPCLit
 {
-    public class Client
+    public sealed class Client : RPCWork.RPCManager
     {
         private IConnection m_conn;
 
         private uint m_uid;
-
-        private RPCBase m_rpc;
 
         public void Init(Type connType, int connId, int bindPort)
         {
@@ -22,12 +18,10 @@ namespace Nave.Network.KPCLit
             m_conn = Activator.CreateInstance(connType) as IConnection;
             m_conn.Init(connId, bindPort);
 
-            m_rpc = new RPCBase();
-            m_rpc.Init();
-
+            Init();
         }
 
-        public void Clean()
+        public override void Clean()
         {
             Debuger.Log();
             if (m_conn != null)
@@ -35,16 +29,9 @@ namespace Nave.Network.KPCLit
                 m_conn.Clean();
                 m_conn = null;
             }
-
-            if (m_rpc != null)
-            {
-                m_rpc.Clean();
-                m_rpc = null;
-            }
-
+            base.Clean();
             m_listNtfListener.Clear();
             m_listRspListener.Clear();
-
         }
 
         public void SetUserId(uint uid)
@@ -99,24 +86,15 @@ namespace Nave.Network.KPCLit
 
         private string m_currInvokingName;
 
-        public void RegisterRPCListener(object listener)
-        {
-            m_rpc.RegisterListener(listener);
-        }
-
-        public void UnRegisterRPCListener(object listener)
-        {
-            m_rpc.UnRegisterListener(listener);
-        }
-
         private void HandleRPCMessage(RPCMessage rpcmsg)
         {
             Debuger.Log("Connection[{0}]-> {1}({2})", m_conn.id, rpcmsg.name, rpcmsg.args);
 
-            var helper = m_rpc.GetMethodHelper(rpcmsg.name);
+            var helper = GetMethodHelper(rpcmsg.name);
             if (helper != null)
             {
                 object[] args = rpcmsg.args;
+
                 var raw_args = rpcmsg.raw_args;
 
                 var paramInfo = helper.method.GetParameters();
@@ -127,9 +105,11 @@ namespace Nave.Network.KPCLit
                     {
                         if (raw_args[i].type == RPCArgType.PBObject)
                         {
-                            var type = paramInfo[i].ParameterType;
-                            object arg = PBSerializer.NDeserialize(raw_args[i].raw_value, type);
-                            args[i] = arg;
+                            args[i] = PBSerializer.NDeserialize(raw_args[i].raw_value, paramInfo[i].ParameterType);
+                        }
+                        else
+                        {
+                            args[i] = raw_args[i].value;
                         }
                     }
 

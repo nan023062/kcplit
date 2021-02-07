@@ -2,16 +2,13 @@
 using System.Text;
 using System.Reflection;
 using Nave.Network.KCPWork;
-using Nave.Network.RPCWork;
 using Nave.Network.Proto;
 
 namespace Nave.Network.KPCLit
 {
-    public class Server : ISessionListener
+    public class Server : RPCWork.RPCManager, ISessionListener
     {
         private Gateway m_gateway;
-
-        private RPCBase m_rpc;
 
         private uint m_authCmd = 0;
 
@@ -22,11 +19,10 @@ namespace Nave.Network.KPCLit
             m_gateway = new Gateway();
             m_gateway.Init(port, this);
 
-            m_rpc = new RPCBase();
-            m_rpc.Init();
+            base.Init();
         }
 
-        public void Clean()
+        public override void Clean()
         {
             Debuger.Log();
             if (m_gateway != null)
@@ -35,17 +31,12 @@ namespace Nave.Network.KPCLit
                 m_gateway = null;
             }
 
-            if (m_rpc != null)
-            {
-                m_rpc.Clean();
-                m_rpc = null;
-            }
+            base.Clean();
 
             m_listMsgListener.Clear();
-
         }
 
-        public void Dump()
+        public override void Dump()
         {
             m_gateway.Dump();
 
@@ -60,7 +51,7 @@ namespace Nave.Network.KPCLit
 
             Debuger.LogWarning("\nNet Listeners ({0}):\n{1}", m_listMsgListener.Count, sb);
 
-            m_rpc.Dump();
+            base.Dump();
         }
 
         public void SetAuthCmd(uint cmd)
@@ -110,20 +101,9 @@ namespace Nave.Network.KPCLit
 
         private string m_currInvokingName;
 
-        public void RegisterRPCListener(object listener)
-        {
-            m_rpc.RegisterListener(listener);
-        }
-
-        public void UnRegisterRPCListener(object listener)
-        {
-            m_rpc.UnRegisterListener(listener);
-        }
-
         private void HandleRPCMessage(ISession session, RPCMessage rpcmsg)
         {
-
-            RPCMethodHelper helper = m_rpc.GetMethodHelper(rpcmsg.name);
+            RPCMethodHelper helper = GetMethodHelper(rpcmsg.name);
             if (helper != null)
             {
                 object[] args = new object[rpcmsg.raw_args.Count + 1];

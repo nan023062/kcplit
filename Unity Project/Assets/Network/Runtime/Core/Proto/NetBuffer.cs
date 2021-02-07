@@ -128,8 +128,6 @@ namespace Nave.Network.Proto
             return m_buff;
         }
 
-
-
         public void SetPositionToLength()
         {
             m_pos = m_len;
@@ -176,9 +174,6 @@ namespace Nave.Network.Proto
         /// <summary>
         /// 将位置设置到最大
         /// </summary>
-
-
-
         private int UpdateLenAndGetWritePos(int writePos, int writeLen)
         {
             if (writePos == -1)
@@ -368,8 +363,6 @@ namespace Nave.Network.Proto
         //=============================================================
         ///读取数据
         /// 
-
-
         public void ReadBytes(byte[] dst, int dstOffset, int count)
         {
             Buffer.BlockCopy(this.m_buff, this.m_pos, dst, dstOffset, count);

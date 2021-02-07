@@ -11,7 +11,7 @@ namespace Nave.Network.IPCLit
     /// <summary>
     /// 使用UDP实现的RPC会话对象
     /// </summary>
-    public class IPCSession : RPCWork.RPCBase
+    public class IPCSession : RPCWork.RPCManager
     {
         private int m_id;
 
@@ -59,8 +59,6 @@ namespace Nave.Network.IPCLit
                 Debuger.LogError(e.Message + e.StackTrace);
                 Stop();
             }
-
-
         }
 
         public void Stop()
@@ -164,16 +162,6 @@ namespace Nave.Network.IPCLit
 
         private int m_currInvokingSrc;
 
-        public void AddRPCListener(object listener)
-        {
-            base.RegisterListener(listener);
-        }
-
-        public void RemoveRPCListener(object listener)
-        {
-            base.UnRegisterListener(listener);
-        }
-
         private void HandleMessage(IPCMessage msg)
         {
             RPCWork.RPCMessage rpcmsg = msg.rpc;
@@ -184,7 +172,9 @@ namespace Nave.Network.IPCLit
             if (helper != null)
             {
                 object[] args  = new object[rpcmsg.args.Length +1];
+
                 List<RPCWork.RPCRawArg> raw_args = rpcmsg.raw_args;
+
                 ParameterInfo[] paramInfo = helper.method.GetParameters();
 
                 if (args.Length == paramInfo.Length)
@@ -217,19 +207,16 @@ namespace Nave.Network.IPCLit
 
                     m_currInvokingName = "";
                     m_currInvokingSrc = 0;
-
                 }
                 else
                 {
                     Debuger.LogWarning("参数数量不一致！");
                 }
-
             }
             else
             {
                 Debuger.LogWarning("RPC不存在！");
             }
-
         }
 
         public void Return(params object[] args)

@@ -14,7 +14,20 @@ namespace Nave.Network.Proto
         private Int32 m_regionBPointer = int.MinValue;
         private UInt32 m_regionBSize = 0;
 
-        public CircularBuffer() { }
+        public CircularBuffer(UInt32 size) 
+        { 
+            Allocate(size); 
+        }
+
+        public void Allocate(UInt32 size)
+        {
+            if(m_bufferEnd != size)
+            {
+                m_buffer = new byte[size];
+                m_bufferEnd = (Int32)size;
+                m_regionAPointer = 0;
+            }
+        }
 
         public void Reset()
         {
@@ -240,13 +253,6 @@ namespace Nave.Network.Proto
                 Array.Copy(src, 0, m_buffer, m_regionAPointer + m_regionBSize, len);
                 m_regionASize += len;
             }
-        }
-
-        public void Allocate(UInt32 size)
-        {
-            m_buffer = new byte[size];
-            m_bufferEnd = (Int32)size;
-            m_regionAPointer = 0;
         }
 
         public Int32 GetBufferStartPos()
