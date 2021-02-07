@@ -3,6 +3,7 @@ using System.Text;
 using System.Reflection;
 using Nave.Network.KCPWork;
 using Nave.Network.Proto;
+using Nave.Network.RPCWork;
 
 namespace Nave.Network.KPCLit
 {

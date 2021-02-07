@@ -2,6 +2,7 @@
 using System.Reflection;
 using Nave.Network.KCPWork;
 using Nave.Network.Proto;
+using Nave.Network.RPCWork;
 
 namespace Nave.Network.KPCLit
 {
@@ -72,7 +73,7 @@ namespace Nave.Network.KPCLit
 
             if (msg.head.cmd == 0)
             {
-                RPCMessage rpcmsg = PBSerializer.NDeserialize<RPCMessage>(msg.content);
+                var rpcmsg = PBSerializer.NDeserialize<RPCWork.RPCMessage>(msg.content);
                 HandleRPCMessage(rpcmsg);
             }
             else
@@ -86,7 +87,7 @@ namespace Nave.Network.KPCLit
 
         private string m_currInvokingName;
 
-        private void HandleRPCMessage(RPCMessage rpcmsg)
+        private void HandleRPCMessage(RPCWork.RPCMessage rpcmsg)
         {
             Debuger.Log("Connection[{0}]-> {1}({2})", m_conn.id, rpcmsg.name, rpcmsg.args);
 
