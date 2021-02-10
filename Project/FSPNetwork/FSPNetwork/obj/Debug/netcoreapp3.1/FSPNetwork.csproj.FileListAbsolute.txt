@@ -1,0 +1,12 @@
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.AssemblyInfoInputs.cache
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.AssemblyInfo.cs
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.csproj.CoreCompileInputs.cache
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.exe
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.deps.json
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.runtimeconfig.json
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.runtimeconfig.dev.json
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.dll
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\bin\Debug\netcoreapp3.1\FSPNetwork.pdb
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.dll
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.pdb
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.genruntimeconfig.cache
