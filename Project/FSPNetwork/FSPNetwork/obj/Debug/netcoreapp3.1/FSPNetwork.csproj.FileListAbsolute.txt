@@ -16,3 +16,4 @@ G:\git repository\FSPNetwork\Outputs\netcoreapp3.1\FSPNetwork.runtimeconfig.json
 G:\git repository\FSPNetwork\Outputs\netcoreapp3.1\FSPNetwork.runtimeconfig.dev.json
 G:\git repository\FSPNetwork\Outputs\netcoreapp3.1\FSPNetwork.dll
 G:\git repository\FSPNetwork\Outputs\netcoreapp3.1\FSPNetwork.pdb
+G:\git repository\FSPNetwork\Project\FSPNetwork\FSPNetwork\obj\Debug\netcoreapp3.1\FSPNetwork.csprojAssemblyReference.cache
