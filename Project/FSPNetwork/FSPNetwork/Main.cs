@@ -60,6 +60,8 @@ namespace Nave.Network
         {
             Nave.Network.KCPLit.Server kcp = null;
 
+            int lastRecv = 0;
+
             public Server()
             {
                 kcp = new KCPLit.Server();
@@ -71,9 +73,17 @@ namespace Nave.Network
             public void HandMsg(KCPWork.ISession session, uint index, pb.Mail_UserMailInfo msg)
             {
                 Debuger.LogWarning($"HandMsg: from={session.id},index={index},mail_id={msg.id}, content={msg.content}");
-                msg.id = 5201314;
-                msg.content = msg.content + "---回复！";
-                kcp.Send(session, 0, cmd, msg);
+
+                int recv = int.Parse(msg.content);
+                if(lastRecv == recv) {
+                    lastRecv++;
+                    msg.id = 5201314;
+                    msg.content = msg.content + "---回复！";
+                    kcp.Send(session, 0, cmd, msg);       
+                }
+                else {
+                    throw new Exception($"lastRecv={lastRecv},recv={recv}!!!");
+                }
             }
 
             public void Input()
@@ -109,13 +119,17 @@ namespace Nave.Network
 
             public void Input()
             {
+                int count = 0;
                 while (true)
                 {
-                    string input = Console.ReadLine();
+                    //string input = Console.ReadLine();
                     pb.Mail_UserMailInfo msg = new pb.Mail_UserMailInfo();
                     msg.id = 5201314;
-                    msg.content = input;
+                    msg.content = count.ToString();
                     kcp.Send(cmd, msg);
+                    count++;
+
+                    Thread.Sleep(100);
                 }
             }
 

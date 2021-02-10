@@ -1,4 +1,4 @@
-﻿namespace Nave.Network.Proto
+﻿namespace Nave.Network.KCPLit
 {
     public enum NetErrorCode
     {

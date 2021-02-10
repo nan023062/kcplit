@@ -73,6 +73,7 @@ namespace Nave.Network.KCPLit
 
             NetMessage msg = new NetMessage();
             msg.Unpack(m_RecvBuff);
+            Debuger.LogError("OnReceive！ uid:{0}", msg.head.uid);
 
             if (msg.head.cmd == 0)
             {
@@ -241,11 +242,6 @@ namespace Nave.Network.KCPLit
             msg.head.cmd = cmd;
             msg.head.uid = m_uid;
             msg.Pack(req, m_SendBuff);
-
-            //NetMessage msg2 = new NetMessage();
-            //msg2.Unpack(m_SendBuff);
-            //TReq msg3 = (TReq)m_RecvBuff.DecodeProtoMsg(msg2.content, null, typeof(TReq));
-
             m_conn.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
