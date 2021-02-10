@@ -129,7 +129,7 @@
             }
 
             m_IsInSpeedUp = speed > m_DefaultSpeed;
-            return speed;
+            return speed;//
         }
 
 
