@@ -34,7 +34,11 @@ namespace Nave.Network.IPCLit
 
         private Queue<byte[]> m_RecvBufferQueue = new Queue<byte[]>();
 
-        private bool m_IsRunning = false;    
+        private bool m_IsRunning = false;
+
+        private SmartBuffer m_SendBuff = new SmartBuffer();
+
+        private SmartBuffer m_RecvBuff = new SmartBuffer();
 
         public void Init(int id)
         {
@@ -149,9 +153,11 @@ namespace Nave.Network.IPCLit
                 if (m_RecvBufferQueue.Count > 0)
                 {
                     byte[] buffer = m_RecvBufferQueue.Dequeue();
-
-                    IPCMessage msg = PBSerializer.NDeserialize<IPCMessage>(buffer);
-
+                    m_RecvBuff.Reset();
+                    m_RecvBuff.In(buffer, 0, (uint)buffer.Length);
+                    IPCMessage msg = new IPCMessage();
+                    m_RecvBuff.DecodeProtoMsg(msg);
+              
                     HandleMessage(msg);
                 }
             }
@@ -191,7 +197,7 @@ namespace Nave.Network.IPCLit
                     {
                         if (raw_args[i].type == RPCWork.RPCArgType.PBObject)
                         {
-                            args[i + 1] = PBSerializer.NDeserialize(raw_args[i].raw_value, paramInfo[i + 1].ParameterType);
+                            args[i + 1] = m_RecvBuff.DecodeProtoMsg(raw_args[i].raw_value,null, paramInfo[i + 1].ParameterType);
                         }
                         else
                         {
@@ -240,8 +246,9 @@ namespace Nave.Network.IPCLit
             msg.src = m_id;
             msg.rpc = rpcmsg;
 
-            byte[] temp = PBSerializer.NSerialize(msg);
-            SendMessage(m_currInvokingSrc, temp, temp.Length);
+            m_SendBuff.Reset();
+            m_SendBuff.EncodeProtoMsg(msg);
+            SendMessage(m_currInvokingSrc, m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         public void ReturnError(string errinfo, int errcode = 1)
@@ -257,8 +264,9 @@ namespace Nave.Network.IPCLit
             msg.src = m_id;
             msg.rpc = rpcmsg;
 
-            byte[] temp = PBSerializer.NSerialize(msg);
-            SendMessage(m_currInvokingSrc, temp, temp.Length);
+            m_SendBuff.Reset();
+            m_SendBuff.EncodeProtoMsg(msg);
+            SendMessage(m_currInvokingSrc, m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         public void Invoke(int dst, string name, params object[] args)
@@ -273,8 +281,9 @@ namespace Nave.Network.IPCLit
             msg.src = m_id;
             msg.rpc = rpcmsg;
 
-            byte[] temp = PBSerializer.NSerialize(msg);
-            SendMessage(dst, temp, temp.Length);
+            m_SendBuff.Reset();
+            m_SendBuff.EncodeProtoMsg(msg);
+            SendMessage(dst, m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         #endregion

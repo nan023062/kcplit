@@ -5,10 +5,6 @@ namespace ProtoBuf
 {
     public class SmartBuffer
     {
-        public static SmartBuffer DefaultSend = new SmartBuffer();
-
-        public static SmartBuffer DefaultRecv = new SmartBuffer();
-
         public static SmartBuffer DefaultWriter = new SmartBuffer();
 
         public static SmartBuffer DefaultReader = new SmartBuffer();
@@ -17,6 +13,7 @@ namespace ProtoBuf
         public const uint MAXSIZE = 0xffffffff;
         protected const int DEFAULT_BUFF_SIZE = 256 << 3;
         private byte[] __InOut_buf = new byte[128];
+        private byte[] __InOut_8bit = new byte[8];
         private uint m_rpos = 0;
         private uint m_wpos = 0;
         private uint m_validateSize = 0;
@@ -24,7 +21,7 @@ namespace ProtoBuf
         protected byte[] m_buff = new byte[DEFAULT_BUFF_SIZE];
 
         //属性
-        public uint Size { get { return m_validateSize; } set { m_validateSize = value; } }
+        public uint Size { get { return m_wpos; } }
         public uint ReadPosition { get { return m_rpos; } }
         public uint WritePosition { get { return m_wpos; } }
 
@@ -33,12 +30,6 @@ namespace ProtoBuf
         {
             m_validateSize = m_rpos = m_wpos = 0;
             _Resize(DEFAULT_BUFF_SIZE);
-        }
-
-        public SmartBuffer(SmartBuffer r)
-        {
-            m_validateSize = m_rpos = m_wpos = 0;
-            Resize(r.m_validateSize);
         }
 
         public SmartBuffer(byte[] buf, uint size)
@@ -58,7 +49,7 @@ namespace ProtoBuf
 
         public void Reset()
         {
-            m_buffSize = m_rpos = m_wpos = 0;
+            m_validateSize = m_rpos = m_wpos = 0;
         }
 
         private void _Resize(uint newsize)
@@ -87,8 +78,6 @@ namespace ProtoBuf
         public void Resize(uint newsize)
         {
             _Resize(newsize);
-            if (newsize > m_validateSize)
-                m_validateSize = newsize;
         }
 
         public byte[] GetBuffer() { return m_buff; }
@@ -96,24 +85,6 @@ namespace ProtoBuf
         public uint GetBuffSize() { return m_buffSize; }
 
         public void SkipRead(uint size) { m_rpos += size; }
-
-        public void ResetRdPos() { m_rpos = 0; }
-
-        public void RdPosSkipToEnd() { m_rpos = m_validateSize; }
-
-        #region ProtoMsg Encode && Decode
-
-        public void DecodeProtoMsg<T>(T msg)
-        {
-            Serializer.Merge(this, msg);
-        }
-
-        public void EncodeProtoMsg<T>(T msg)
-        {
-            Serializer.Serialize(this, msg);
-        }
-
-        #endregion
 
         #region Read && Write
 
@@ -144,8 +115,8 @@ namespace ProtoBuf
             if (Size - 1 < m_rpos) return 0;
 
             uint rSize = (uint)size;
-            if (dSize - 1 < offest + rSize)
-                rSize = (uint)(dSize - offest - 1);
+            //if (dSize - 1 < offest + rSize)
+            //    rSize = (uint)(dSize - offest - 1);
 
             uint lSize = Size - m_rpos;
             if (lSize < rSize) rSize = lSize;
@@ -164,43 +135,43 @@ namespace ProtoBuf
 
         public SmartBuffer In(char value)
         {
-		    __InOut_buf [0] = (byte)value;
-		    _Write(__InOut_buf, sizeof(char));
+            __InOut_8bit[0] = (byte)value;
+		    _Write(__InOut_8bit, sizeof(char));
             return this;
         }
         public SmartBuffer Out(out char value)
         {
-		    _Read(__InOut_buf, sizeof(char));
-		    value = (char)__InOut_buf[0];
+		    _Read(__InOut_8bit, sizeof(char));
+		    value = (char)__InOut_8bit[0];
             return this;
         }
 
         public SmartBuffer In(bool value)
         {
 		    if(value)
-			    __InOut_buf[0] = (byte)1;
+                __InOut_8bit[0] = (byte)1;
 		    else
-			    __InOut_buf [0] = (byte)0;
-		    _Write (__InOut_buf, sizeof(bool));
+                __InOut_8bit[0] = (byte)0;
+		    _Write (__InOut_8bit, sizeof(bool));
             return this;
         }
         public SmartBuffer Out(out bool value)
         {
-		    _Read(__InOut_buf, sizeof(bool));
-		    value = BitConverter.ToBoolean(__InOut_buf, 0);
+		    _Read(__InOut_8bit, sizeof(bool));
+		    value = BitConverter.ToBoolean(__InOut_8bit, 0);
             return this;
         }
 
         public SmartBuffer In(byte value)
         {
-		    __InOut_buf[0] = value;
-		    _Write(__InOut_buf, sizeof(Byte));
+		    __InOut_8bit[0] = value;
+		    _Write(__InOut_8bit, sizeof(Byte));
             return this;
         }
         public SmartBuffer Out(out byte value)
         {
-		    _Read(__InOut_buf, sizeof(byte));
-		    value = __InOut_buf[0];
+		    _Read(__InOut_8bit, sizeof(byte));
+		    value = __InOut_8bit[0];
             return this;
         }
 
@@ -215,123 +186,123 @@ namespace ProtoBuf
 
         public SmartBuffer In(Int16 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-            _Write (__InOut_buf, sizeof(Int16));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+            _Write (__InOut_8bit, sizeof(Int16));
             return this;
         }
         public SmartBuffer Out(out Int16 value)
         {
-		    _Read(__InOut_buf, sizeof(Int16));
-            value = (Int16)((int)__InOut_buf[0] | 
-                        (int)__InOut_buf[1] << 8);
+		    _Read(__InOut_8bit, sizeof(Int16));
+            value = (Int16)((int)__InOut_8bit[0] | 
+                        (int)__InOut_8bit[1] << 8);
             return this;
         }
 
         public SmartBuffer In(UInt16 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-		    _Write (__InOut_buf, sizeof(UInt16));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+		    _Write (__InOut_8bit, sizeof(UInt16));
             return this;
         }
         public SmartBuffer Out(out UInt16 value)
         {
-		    _Read(__InOut_buf, sizeof(UInt16));
-            value = (UInt16)((uint)__InOut_buf[0] |
-                        (uint)__InOut_buf[1] << 8);
+		    _Read(__InOut_8bit, sizeof(UInt16));
+            value = (UInt16)((uint)__InOut_8bit[0] |
+                        (uint)__InOut_8bit[1] << 8);
             return this;
         }
 
         public SmartBuffer In(Int32 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-            __InOut_buf[2] = (byte)((value >> 16) & 0xFF);
-            __InOut_buf[3] = (byte)((value >> 24) & 0xFF);
-            _Write (__InOut_buf, sizeof(Int32));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+            __InOut_8bit[2] = (byte)((value >> 16) & 0xFF);
+            __InOut_8bit[3] = (byte)((value >> 24) & 0xFF);
+            _Write (__InOut_8bit, sizeof(Int32));
             return this;
         }
         public SmartBuffer Out(out Int32 value)
         {
-		    _Read(__InOut_buf, sizeof(Int32));
-            value = (Int32)__InOut_buf[0] << 0 |
-                    (Int32)__InOut_buf[1] << 8 |
-                    (Int32)__InOut_buf[2] << 16 | 
-                    (Int32)__InOut_buf[3] << 24;
+		    _Read(__InOut_8bit, sizeof(Int32));
+            value = (Int32)__InOut_8bit[0] << 0 |
+                    (Int32)__InOut_8bit[1] << 8 |
+                    (Int32)__InOut_8bit[2] << 16 | 
+                    (Int32)__InOut_8bit[3] << 24;
             return this;
         }
 
         public SmartBuffer In(UInt32 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-            __InOut_buf[2] = (byte)((value >> 16) & 0xFF);
-            __InOut_buf[3] = (byte)((value >> 24) & 0xFF);
-            _Write (__InOut_buf, sizeof(UInt32));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+            __InOut_8bit[2] = (byte)((value >> 16) & 0xFF);
+            __InOut_8bit[3] = (byte)((value >> 24) & 0xFF);
+            _Write (__InOut_8bit, sizeof(UInt32));
             return this;
         }
         public SmartBuffer Out(out UInt32 value)
         {
-		    _Read(__InOut_buf, sizeof(UInt32));
-            value = (UInt32)__InOut_buf[0] << 0 |
-                    (UInt32)__InOut_buf[1] << 8 |
-                    (UInt32)__InOut_buf[2] << 16 |
-                    (UInt32)__InOut_buf[3] << 24;
+		    _Read(__InOut_8bit, sizeof(UInt32));
+            value = (UInt32)__InOut_8bit[0] << 0 |
+                    (UInt32)__InOut_8bit[1] << 8 |
+                    (UInt32)__InOut_8bit[2] << 16 |
+                    (UInt32)__InOut_8bit[3] << 24;
             return this;
         }
 
         public SmartBuffer In(Int64 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-            __InOut_buf[2] = (byte)((value >> 16) & 0xFF);
-            __InOut_buf[3] = (byte)((value >> 24) & 0xFF);
-            __InOut_buf[4] = (byte)((value >> 32) & 0xFF);
-            __InOut_buf[5] = (byte)((value >> 40) & 0xFF);
-            __InOut_buf[6] = (byte)((value >> 48) & 0xFF);
-            __InOut_buf[7] = (byte)((value >> 56) & 0xFF);
-            _Write (__InOut_buf, sizeof(Int64));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+            __InOut_8bit[2] = (byte)((value >> 16) & 0xFF);
+            __InOut_8bit[3] = (byte)((value >> 24) & 0xFF);
+            __InOut_8bit[4] = (byte)((value >> 32) & 0xFF);
+            __InOut_8bit[5] = (byte)((value >> 40) & 0xFF);
+            __InOut_8bit[6] = (byte)((value >> 48) & 0xFF);
+            __InOut_8bit[7] = (byte)((value >> 56) & 0xFF);
+            _Write (__InOut_8bit, sizeof(Int64));
             return this;
         }
         public SmartBuffer Out(out Int64 value)
         {
-		    _Read(__InOut_buf, sizeof(Int64));
-            value = (Int64)__InOut_buf[0] << 0 |
-                    (Int64)__InOut_buf[1] << 8 |
-                    (Int64)__InOut_buf[2] << 16 |
-                    (Int64)__InOut_buf[3] << 24 |
-                    (Int64)__InOut_buf[4] << 32 |
-                    (Int64)__InOut_buf[5] << 40 |
-                    (Int64)__InOut_buf[6] << 48 |
-                    (Int64)__InOut_buf[7] << 56;
+		    _Read(__InOut_8bit, sizeof(Int64));
+            value = (Int64)__InOut_8bit[0] << 0 |
+                    (Int64)__InOut_8bit[1] << 8 |
+                    (Int64)__InOut_8bit[2] << 16 |
+                    (Int64)__InOut_8bit[3] << 24 |
+                    (Int64)__InOut_8bit[4] << 32 |
+                    (Int64)__InOut_8bit[5] << 40 |
+                    (Int64)__InOut_8bit[6] << 48 |
+                    (Int64)__InOut_8bit[7] << 56;
             return this;
         }
 
         public SmartBuffer In(UInt64 value)
         {
-            __InOut_buf[0] = (byte)((value >> 0) & 0xFF);
-            __InOut_buf[1] = (byte)((value >> 8) & 0xFF);
-            __InOut_buf[2] = (byte)((value >> 16) & 0xFF);
-            __InOut_buf[3] = (byte)((value >> 24) & 0xFF);
-            __InOut_buf[4] = (byte)((value >> 32) & 0xFF);
-            __InOut_buf[5] = (byte)((value >> 40) & 0xFF);
-            __InOut_buf[6] = (byte)((value >> 48) & 0xFF);
-            __InOut_buf[7] = (byte)((value >> 56) & 0xFF);
-            _Write (__InOut_buf, sizeof(UInt64));
+            __InOut_8bit[0] = (byte)((value >> 0) & 0xFF);
+            __InOut_8bit[1] = (byte)((value >> 8) & 0xFF);
+            __InOut_8bit[2] = (byte)((value >> 16) & 0xFF);
+            __InOut_8bit[3] = (byte)((value >> 24) & 0xFF);
+            __InOut_8bit[4] = (byte)((value >> 32) & 0xFF);
+            __InOut_8bit[5] = (byte)((value >> 40) & 0xFF);
+            __InOut_8bit[6] = (byte)((value >> 48) & 0xFF);
+            __InOut_8bit[7] = (byte)((value >> 56) & 0xFF);
+            _Write (__InOut_8bit, sizeof(UInt64));
             return this;
         }
         public SmartBuffer Out(out UInt64 value)
         {
-		    _Read(__InOut_buf, sizeof(UInt64));
-            value = (UInt64)__InOut_buf[0] << 0 |
-                    (UInt64)__InOut_buf[1] << 8 |
-                    (UInt64)__InOut_buf[2] << 16 |
-                    (UInt64)__InOut_buf[3] << 24 |
-                    (UInt64)__InOut_buf[4] << 32 |
-                    (UInt64)__InOut_buf[5] << 40 |
-                    (UInt64)__InOut_buf[6] << 48 |
-                    (UInt64)__InOut_buf[7] << 56;
+		    _Read(__InOut_8bit, sizeof(UInt64));
+            value = (UInt64)__InOut_8bit[0] << 0 |
+                    (UInt64)__InOut_8bit[1] << 8 |
+                    (UInt64)__InOut_8bit[2] << 16 |
+                    (UInt64)__InOut_8bit[3] << 24 |
+                    (UInt64)__InOut_8bit[4] << 32 |
+                    (UInt64)__InOut_8bit[5] << 40 |
+                    (UInt64)__InOut_8bit[6] << 48 |
+                    (UInt64)__InOut_8bit[7] << 56;
             return this;
         }
 
@@ -387,8 +358,8 @@ namespace ProtoBuf
                 byte* p = (byte*)&value;
                 uint length = sizeof(float);
                 for (int i = 0; i < length; i++)
-                    __InOut_buf[i] = *(p + i);
-                _Write(__InOut_buf, length);
+                    __InOut_8bit[i] = *(p + i);
+                _Write(__InOut_8bit, length);
             }
             return this;
         }
@@ -396,12 +367,12 @@ namespace ProtoBuf
         {
             unsafe {
                 uint length = sizeof(float);
-                _Read(__InOut_buf, length);
+                _Read(__InOut_8bit, length);
 
                 float result = 0f;
                 byte* p = (byte*)&result;
                 for (int i = 0; i < length; i++)
-                    *(p + i) = __InOut_buf[i];
+                    *(p + i) = __InOut_8bit[i];
                 value = result;
             }
             return this;
@@ -427,15 +398,280 @@ namespace ProtoBuf
             Out(out size);
             if (size > 0)
             {
-                byte[] temp = new byte[size];
-                _Read(temp, size);
-                value = System.Text.Encoding.ASCII.GetChars(temp);
+                _Read(__InOut_buf, size);
+                value = Encoding.ASCII.GetChars(__InOut_buf, 0, size);
             }
             else
             {
                 value = null;
             }
             return this;
+        }
+
+        #endregion
+
+        #region Static Tools
+
+        public static uint ToUInt(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(uint));
+                uint result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(uint value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static int ToInt(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(int));
+                int result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(int value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static UInt64 ToULong(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(UInt64));
+                UInt64 result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(UInt64 value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static Int64 ToLong(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(Int64));
+                Int64 result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(Int64 value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static UInt16 ToUShort(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(UInt16));
+                UInt16 result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(UInt16 value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static Int16 ToShort(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(Int16));
+                Int16 result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(Int16 value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static float ToFloat(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(float));
+                float result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(float value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static string ToString(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, (uint)bytes.Length);
+                string result = string.Empty;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(string value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static byte ToByte(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(byte));
+                byte result = 0;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(byte value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static bool ToBool(byte[] bytes)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, sizeof(bool));
+                bool result = false;
+                DefaultReader.Out(out result);
+                return result;
+            }
+        }
+
+        public static byte[] ToBytes(bool value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.In(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
+        }
+
+        public static void ToObject<T>(byte[] bytes, T obj)
+        {
+            lock (DefaultReader)
+            {
+                DefaultReader.Reset();
+                DefaultReader._Write(bytes, 0, (uint)bytes.Length);
+                DefaultReader.DecodeProtoMsg(obj);
+            }
+        }
+
+        public static byte[] ToBytes<T>(T value)
+        {
+            lock (DefaultWriter)
+            {
+                DefaultWriter.Reset();
+                DefaultWriter.EncodeProtoMsg(value);
+                byte[] bytes = new byte[DefaultWriter.Size];
+                DefaultWriter._Read(bytes, DefaultWriter.Size);
+                return bytes;
+            }
         }
 
         #endregion

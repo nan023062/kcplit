@@ -3,6 +3,7 @@ using System.Reflection;
 using Nave.Network.KCPWork;
 using Nave.Network.Proto;
 using Nave.Network.RPCWork;
+using ProtoBuf;
 
 namespace Nave.Network.KCPLit
 {
@@ -12,10 +13,14 @@ namespace Nave.Network.KCPLit
 
         private uint m_uid;
 
-        public void Init(Type connType, int connId, int bindPort)
+        private ProtoBuf.SmartBuffer m_SendBuff = new ProtoBuf.SmartBuffer();
+
+        private ProtoBuf.SmartBuffer m_RecvBuff = new ProtoBuf.SmartBuffer();
+
+        public Client(int connId, int bindPort)
         {
-            Debuger.Log("connType:{0}, connId:{1}, bindPort:{2}", connType, connId, bindPort);
-            m_conn = Activator.CreateInstance(connType) as IConnection;
+            Debuger.Log("connId:{0}, bindPort:{1}", connId, bindPort);
+            m_conn = new KCPWork.KCPConnection();
             m_conn.Init(connId, bindPort);
             Init();
         }
@@ -63,12 +68,11 @@ namespace Nave.Network.KCPLit
 
         private void OnReceive(byte[] bytes, int len)
         {
-            var buffer = ProtoBuf.SmartBuffer.DefaultRecv;
-            buffer.Reset();
-            buffer.In(bytes, 0, (uint)len);
+            m_RecvBuff.Reset();
+            m_RecvBuff.In(bytes, 0, (uint)len);
 
             NetMessage msg = new NetMessage();
-            msg.Unpack(buffer);
+            msg.Unpack(m_RecvBuff);
 
             if (msg.head.cmd == 0)
             {
@@ -86,7 +90,7 @@ namespace Nave.Network.KCPLit
 
         private string m_currInvokingName;
 
-        private void HandleRPCMessage(RPCWork.RPCMessage rpcmsg)
+        private void HandleRPCMessage(RPCMessage rpcmsg)
         {
             Debuger.Log("Connection[{0}]-> {1}({2})", m_conn.id, rpcmsg.name, rpcmsg.args);
 
@@ -105,7 +109,7 @@ namespace Nave.Network.KCPLit
                     {
                         if (raw_args[i].type == RPCArgType.PBObject)
                         {
-                            args[i] = PBSerializer.NDeserialize(raw_args[i].raw_value, paramInfo[i].ParameterType);
+                            m_RecvBuff.DecodeProtoMsg(raw_args[i].raw_value,null, paramInfo[i].ParameterType);
                         }
                         else
                         {
@@ -149,10 +153,8 @@ namespace Nave.Network.KCPLit
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
             msg.head.uid = m_uid;
-            msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
-
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_conn.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            msg.Pack(rpcmsg, m_SendBuff);
+            m_conn.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         public void Return(params object[] args)
@@ -169,10 +171,8 @@ namespace Nave.Network.KCPLit
                 NetMessage msg = new NetMessage();
                 msg.head = new ProtocolHead();
                 msg.head.uid = m_uid;
-                msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
-
-                int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-                m_conn.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+                msg.Pack(rpcmsg, m_SendBuff);
+                m_conn.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
             }
         }
 
@@ -189,6 +189,7 @@ namespace Nave.Network.KCPLit
             public Delegate onErr;
             public float timeout;
             public float timestamp;
+            public object msg;
         }
 
         static class MessageIndexGenerator
@@ -211,10 +212,8 @@ namespace Nave.Network.KCPLit
             msg.head.index = MessageIndexGenerator.NewIndex();
             msg.head.cmd = cmd;
             msg.head.uid = m_uid;
-            msg.Pack(req, ProtoBuf.SmartBuffer.DefaultSend);
-
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_conn.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            msg.Pack(req, m_SendBuff);
+            m_conn.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
 
             AddListener(cmd, typeof(TRsp), onRsp, msg.head.index, timeout, onErr);
         }
@@ -237,17 +236,17 @@ namespace Nave.Network.KCPLit
 
         public void Send<TReq>(uint cmd, TReq req)
         {
-            Debuger.Log("cmd:{0}", cmd);
-
             NetMessage msg = new NetMessage();
             msg.head.index = 0;
             msg.head.cmd = cmd;
             msg.head.uid = m_uid;
+            msg.Pack(req, m_SendBuff);
 
-            msg.Pack(req, ProtoBuf.SmartBuffer.DefaultSend);
+            //NetMessage msg2 = new NetMessage();
+            //msg2.Unpack(m_SendBuff);
+            //TReq msg3 = (TReq)m_RecvBuff.DecodeProtoMsg(msg2.content, null, typeof(TReq));
 
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_conn.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            m_conn.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         public void AddListener<TNtf>(uint cmd, Action<TNtf> onNtf)
@@ -270,10 +269,10 @@ namespace Nave.Network.KCPLit
                 var helper = m_listNtfListener[msg.head.cmd];
                 if (helper != null)
                 {
-                    object obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
-                    if (obj != null)
+                    helper.msg = m_RecvBuff.DecodeProtoMsg(msg.content, helper.msg, helper.TMsg);
+                    if (helper.msg != null)
                     {
-                        helper.onMsg.DynamicInvoke(obj);
+                        helper.onMsg.DynamicInvoke(helper.msg);
                     }
                     else
                     {
@@ -291,11 +290,10 @@ namespace Nave.Network.KCPLit
                 if (helper != null)
                 {
                     m_listRspListener.Remove(msg.head.index);
-
-                    object obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
-                    if (obj != null)
+                    helper.msg = m_RecvBuff.DecodeProtoMsg(msg.content, helper.msg, helper.TMsg);
+                    if (helper.msg != null)
                     {
-                        helper.onMsg.DynamicInvoke(obj);
+                        helper.onMsg.DynamicInvoke(helper.msg);
                     }
                     else
                     {

@@ -33,27 +33,6 @@ namespace Nave.Network.Proto
             return buffer;
         }
 
-        public static byte[] NSerialize(object t)
-        {
-            byte[] buffer = null;
-
-            using (MemoryStream m = new MemoryStream())
-            {
-                if (t != null)
-                {
-                    RuntimeTypeModel.Default.Serialize(m, t);
-                }
-
-                m.Position = 0;
-                int length = (int)m.Length;
-                buffer = new byte[length];
-                m.Read(buffer, 0, length);
-            }
-
-            return buffer;
-        }
-
-
         public static int NSerialize(object t, byte[] buffer)
         {
             using (MemoryStream m = new MemoryStream())

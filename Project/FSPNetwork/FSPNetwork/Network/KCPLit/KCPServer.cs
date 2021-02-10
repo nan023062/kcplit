@@ -4,14 +4,19 @@ using System.Reflection;
 using Nave.Network.KCPWork;
 using Nave.Network.Proto;
 using Nave.Network.RPCWork;
+using ProtoBuf;
 
 namespace Nave.Network.KCPLit
 {
-    public class Server : RPCWork.RPCManager, ISessionListener
+    public class Server : RPCManager, ISessionListener
     {
         private Gateway m_gateway;
 
         private uint m_authCmd = 0;
+
+        private ProtoBuf.SmartBuffer m_SendBuff = new ProtoBuf.SmartBuffer();
+
+        private ProtoBuf.SmartBuffer m_RecvBuff = new ProtoBuf.SmartBuffer();
 
         public void Init(int port)
         {
@@ -69,9 +74,9 @@ namespace Nave.Network.KCPLit
         {
             NetMessage msg = new NetMessage();
 
-            ProtoBuf.SmartBuffer.DefaultRecv.Reset();
-            ProtoBuf.SmartBuffer.DefaultRecv.In(bytes,0, (uint)len);
-            msg.Unpack(ProtoBuf.SmartBuffer.DefaultRecv);
+            m_RecvBuff.Reset();
+            m_RecvBuff.In(bytes,0, (uint)len);
+            msg.Unpack(m_RecvBuff);
 
             if (session.IsAuth())
             {
@@ -121,7 +126,7 @@ namespace Nave.Network.KCPLit
                     {
                         if (raw_args[i].type == RPCArgType.PBObject)
                         {
-                            args[i + 1] = PBSerializer.NDeserialize(raw_args[i].raw_value, paramInfo[i + 1].ParameterType);
+                            args[i + 1] = m_RecvBuff.DecodeProtoMsg(raw_args[i].raw_value,null, paramInfo[i + 1].ParameterType);
                         }
                         else
                         {
@@ -162,15 +167,11 @@ namespace Nave.Network.KCPLit
             rpcmsg.name = name;
             rpcmsg.args = args;
 
-            byte[] buffer = PBSerializer.NSerialize(rpcmsg);
-
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
-
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_currInvokingSession.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
-        }
+            msg.Pack(rpcmsg, m_SendBuff);
+            m_currInvokingSession.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
+        }   
         public void ReturnError(params object[] args)
         {
             var name = "On" + m_currInvokingName + "Error";
@@ -181,10 +182,8 @@ namespace Nave.Network.KCPLit
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
-
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_currInvokingSession.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            msg.Pack(rpcmsg, m_SendBuff);
+            m_currInvokingSession.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
         public void Invoke(ISession session, string name, params object[] args)
         {
@@ -196,10 +195,8 @@ namespace Nave.Network.KCPLit
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-
-            msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_currInvokingSession.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            msg.Pack(rpcmsg, m_SendBuff);
+            m_currInvokingSession.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
         public void Invoke(ISession[] listSession, string name, params object[] args)
         {
@@ -211,12 +208,10 @@ namespace Nave.Network.KCPLit
 
             NetMessage msg = new NetMessage();
             msg.head = new ProtocolHead();
-            msg.Pack(rpcmsg, ProtoBuf.SmartBuffer.DefaultSend);
+            msg.Pack(rpcmsg, m_SendBuff);
 
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size; 
-            for (int i = 0; i < listSession.Length; i++)
-            {
-                listSession[i].Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            for (int i = 0; i < listSession.Length; i++) {
+                listSession[i].Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
             }
         }
 
@@ -229,6 +224,7 @@ namespace Nave.Network.KCPLit
         {
             public Type TMsg;
             public Delegate onMsg;
+            public object msg;
         }
 
 
@@ -239,11 +235,9 @@ namespace Nave.Network.KCPLit
             var helper = m_listMsgListener[msg.head.cmd];
             if (helper != null)
             {
-                object obj = PBSerializer.NDeserialize(msg.content, helper.TMsg);
-                if (obj != null)
-                {
-                    helper.onMsg.DynamicInvoke(session, msg.head.index, obj);
-                }
+                helper.msg = m_RecvBuff.DecodeProtoMsg(msg.content,helper.msg, helper.TMsg);
+                if (helper.msg != null)
+                    helper.onMsg.DynamicInvoke(session, msg.head.index, helper.msg);
             }
             else
             {
@@ -259,10 +253,8 @@ namespace Nave.Network.KCPLit
             msgobj.head.index = index;
             msgobj.head.cmd = cmd;
             msgobj.head.uid = session.uid;
-
-            msgobj.Pack(msg, ProtoBuf.SmartBuffer.DefaultSend);
-            int length = (int)ProtoBuf.SmartBuffer.DefaultSend.Size;
-            m_currInvokingSession.Send(ProtoBuf.SmartBuffer.DefaultSend.GetBuffer(), length);
+            msgobj.Pack(msg, m_SendBuff);
+            session.Send(m_SendBuff.GetBuffer(), (int)m_SendBuff.Size);
         }
 
         public void AddListener<TMsg>(uint cmd, Action<ISession, uint, TMsg> onMsg)

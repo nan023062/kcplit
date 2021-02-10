@@ -69,6 +69,11 @@ namespace ProtoBuf
 			return (T)RuntimeTypeModel.Default.Deserialize(source, instance, typeof(T));
 		}
 
+        public static object Merge(SmartBuffer source, object instance, Type type)
+        {
+            return RuntimeTypeModel.Default.Deserialize(source, instance, type);
+        }
+
 #else
 		public static T Merge<T>(Stream source, T instance)
         {

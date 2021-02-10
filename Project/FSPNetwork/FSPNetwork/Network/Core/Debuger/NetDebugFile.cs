@@ -37,7 +37,7 @@ namespace Nave.Network
                 return false;
             }
 
-            byte[] buffer = PBSerializer.NSerialize(m_content);
+            byte[] buffer = ProtoBuf.SmartBuffer.ToBytes(m_content);
             return FileUtils.SaveFile(dirname + filename, buffer) > 0;
         }
 
@@ -59,7 +59,7 @@ namespace Nave.Network
             Byte[] bytes = FileUtils.ReadFile(fullpath);
             if (bytes != null && bytes.Length > 0)
             {
-                m_content = PBSerializer.NDeserialize<NetDebugFileData>(bytes);
+                ProtoBuf.SmartBuffer.ToObject<NetDebugFileData>(bytes, m_content);
                 return ParserFile();
             }
             else

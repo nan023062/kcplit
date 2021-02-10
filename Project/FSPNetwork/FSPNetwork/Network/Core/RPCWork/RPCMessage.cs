@@ -60,20 +60,19 @@ namespace Nave.Network.RPCWork
                     return null;
                 }
 
-                NetBufferReader reader = new NetBufferReader(raw_value);
                 switch (type)
                 {
-                    case RPCArgType.Int: return reader.ReadInt();
-                    case RPCArgType.UInt: return reader.ReadUInt();
-                    case RPCArgType.Long: return reader.ReadLong();
-                    case RPCArgType.ULong: return reader.ReadULong();
-                    case RPCArgType.Short: return reader.ReadShort();
-                    case RPCArgType.UShort: return reader.ReadUShort();
-                    case RPCArgType.Double: return reader.ReadDouble();
-                    case RPCArgType.Float: return reader.ReadFloat();
-                    case RPCArgType.String: return System.Text.Encoding.UTF8.GetString(raw_value);
-                    case RPCArgType.Byte: return reader.ReadByte();
-                    case RPCArgType.Bool: return reader.ReadByte() != 0;
+                    case RPCArgType.Int: return SmartBuffer.ToInt(raw_value);
+                    case RPCArgType.UInt: return SmartBuffer.ToUInt(raw_value);
+                    case RPCArgType.Long: return SmartBuffer.ToLong(raw_value);
+                    case RPCArgType.ULong: return SmartBuffer.ToULong(raw_value);
+                    case RPCArgType.Short: return SmartBuffer.ToShort(raw_value);
+                    case RPCArgType.UShort: return SmartBuffer.ToUShort(raw_value);
+                    case RPCArgType.Double: return SmartBuffer.ToFloat(raw_value);
+                    case RPCArgType.Float: return SmartBuffer.ToFloat(raw_value);
+                    case RPCArgType.String: return SmartBuffer.ToString(raw_value);
+                    case RPCArgType.Byte: return SmartBuffer.ToByte(raw_value);
+                    case RPCArgType.Bool: return SmartBuffer.ToBool(raw_value);
                     case RPCArgType.ByteArray: return raw_value;
                     case RPCArgType.PBObject: return raw_value;//由于数据层是不知道具体类型，由反射层去反序列化
                     default: return raw_value;
@@ -87,64 +86,57 @@ namespace Nave.Network.RPCWork
                 if (v is int)
                 {
                     type = RPCArgType.Int;
-                    raw_value = BitConverter.GetBytes((int) v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((int)v);
                 }
                 else if (v is uint)
                 {
                     type = RPCArgType.UInt;
-                    raw_value = BitConverter.GetBytes((uint)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((uint)v);
                 }
                 else if (v is long)
                 {
                     type = RPCArgType.Long;
-                    raw_value = BitConverter.GetBytes((long)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((long)v);
                 }
                 else if (v is ulong)
                 {
                     type = RPCArgType.ULong;
-                    raw_value = BitConverter.GetBytes((ulong)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((ulong)v);
                 }
                 else if (v is short)
                 {
                     type = RPCArgType.Short;
-                    raw_value = BitConverter.GetBytes((short)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((short)v);
                 }
                 else if (v is ushort)
                 {
                     type = RPCArgType.UShort;
-                    raw_value = BitConverter.GetBytes((ushort)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((ushort)v);
                 }
                 else if (v is double)
                 {
                     type = RPCArgType.Double;
-                    raw_value = BitConverter.GetBytes((double)v);
+                    raw_value = SmartBuffer.ToBytes((float)v);
                 }
                 else if (v is float)
                 {
                     type = RPCArgType.Float;
-                    raw_value = BitConverter.GetBytes((float)v);
-                    NetBuffer.ReverseOrder(raw_value);
+                    raw_value = SmartBuffer.ToBytes((float)v);
                 }
                 else if (v is string)
                 {
                     type = RPCArgType.String;
-                    raw_value = System.Text.Encoding.UTF8.GetBytes((string)v);
+                    raw_value = SmartBuffer.ToBytes((string)v);
                 }
                 else if (v is byte)
                 {
                     type = RPCArgType.Byte;
-                    raw_value = new[] { (byte)v };
+                    raw_value = SmartBuffer.ToBytes((byte)v);
                 }
                 else if (v is bool)
                 {
                     type = RPCArgType.Bool;
-                    raw_value = new[] { (bool)v ? (byte)1 : (byte)0 };
+                    raw_value = SmartBuffer.ToBytes((bool)v);
                 }
                 else if (v is byte[])
                 {
@@ -154,7 +146,7 @@ namespace Nave.Network.RPCWork
                 }
                 else
                 {
-                    var bytes = PBSerializer.NSerialize(v);
+                    var bytes = SmartBuffer.ToBytes(v);
                     if (bytes != null)
                     {
                         type = RPCArgType.PBObject;
