@@ -9,18 +9,24 @@ namespace ProtoBuf
 
         public static SmartBuffer DefaultReader = new SmartBuffer();
 
-        //字段
         public const uint MAXSIZE = 0xffffffff;
+
         protected const int DEFAULT_BUFF_SIZE = 256 << 3;
+
         private byte[] __InOut_buf = new byte[128];
+
         private byte[] __InOut_8bit = new byte[8];
+
         private uint m_rpos = 0;
+
         private uint m_wpos = 0;
+
         private uint m_validateSize = 0;
-        protected uint m_buffSize = 0;    
+
+        protected uint m_buffSize = 0;   
+        
         protected byte[] m_buff = new byte[DEFAULT_BUFF_SIZE];
 
-        //属性
         public uint Size { get { return m_wpos; } }
         public uint ReadPosition { get { return m_rpos; } }
         public uint WritePosition { get { return m_wpos; } }
@@ -316,7 +322,7 @@ namespace ProtoBuf
             }
             catch (Exception e)
             {
-                Debuger.LogError($"SmartBuffer.In() msg={e.Message}, stacktrack={e.StackTrace}!");
+                throw e;
             }
             return this;
         }
@@ -388,7 +394,7 @@ namespace ProtoBuf
             }
             catch (Exception e)
             {
-                Debuger.LogError($"SmartBuffer.In() msg={e.Message}, stacktrack={e.StackTrace}!");
+                throw e;
             }
             return this;
         }
